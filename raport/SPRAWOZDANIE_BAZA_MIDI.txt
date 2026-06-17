@@ -1,0 +1,118 @@
+================================================================================
+SPRAWOZDANIE: BAZA DANYCH MIDI - DATASET FRAGMENTÓW FORTEPIANOWYCH
+================================================================================
+
+Źródło: MAESTRO v3.0.0 | Liczba fragmentów: ~300 (20-30s)
+
+================================================================================
+1. OPIS
+================================================================================
+
+Kuratorowana baza 300 fragmentów muzycznych MIDI ekstrakcjonowanych z
+dataset MAESTRO (profesjonalne nagrania fortepianowe 2004-2018).
+
+================================================================================
+2. ŹRÓDŁO, LICENCJA, STRUKTURA
+================================================================================
+
+Źródło: MAESTRO v3.0.0 (https://magenta.tensorflow.org/datasets/maestro)
+Licencja: Creative Commons Attribution Non-Commercial Share-Alike 4.0
+Materiał źródłowy: ~1200 nagrań MIDI (2004-2018)
+
+Struktura:
+  midi_task/maestro-v3.0.0/         [Dataset źródłowy z metadanymi CSV/JSON]
+  midi_task/midi_20_30_single_instrument/  [300 wygenerowanych fragmentów]
+  midi_task/build_midi_set.py        [Skrypt generujący]
+
+================================================================================
+3. PARAMETRY FRAGMENTÓW
+================================================================================
+
+• Format: MIDI Type 0 (standardowy)
+• Długość: 20-30 sekund (losowo ekstrakcjonowany)
+• Instrumentacja: Piano (program 0, bez perkusji)
+• Tempo: 120 BPM
+• Minimalnie: 1 nuta na fragment
+• Konwencja nazw: clip_XXX_<źródło>_<czas>s.mid
+
+Cechy zachowywane: pitch, velocity, timing (start/end)
+
+================================================================================
+4. TWORZENIE BAZY
+================================================================================
+
+1. Losowy wybór fragmentu z utworu źródłowego (min. 35s długości)
+2. Wyodrębnienie nut z instrumentów fortepianowych
+3. Normalizacja na pojedynczy instrument Piano
+4. Zapis MIDI Type 0 z CC64 sygnałem na końcu
+5. Seed: 20260603 (powtarzalność)
+
+
+================================================================================
+5. FORMAT I KONWERSJE
+================================================================================
+
+Format MIDI: Type 0, PPQ standard
+Zawartość: Sekwencja nut (pitch, velocity, start/end) + CC64 na końcu
+
+Narzędzia odczytu: pretty_midi, music21, mido (Python); DAW: Ableton, FL,
+Logic Pro, Reaper; Online: browsermidi.org, flaticon.com/midi-editor
+
+KONWERSJE MOŻLIWE:
+
+  MIDI → Audio (WAV/MP3):
+    fluidsynth -F out.wav soundfont.sf2 in.mid
+    ffmpeg -i out.wav out.mp3
+
+  MIDI → Notacja: MusicXML, ABC, Lilypond, PDF
+    Narzędzia: MuseScore, music21
+
+  MIDI → Liczby (ML):
+    Piano Roll, Event Sequence, Symbolic Features
+    Biblioteki: librosa, music21, numpy
+
+  CZYSZCZENIE: transponowanie, normalizacja velocity, filtrowanie
+  AUGMENTACJA: ±12 półtonów, time stretching, velocity shifts
+
+Przykład transponowania (Python):
+  import pretty_midi
+  pm = pretty_midi.PrettyMIDI('clip.mid')
+  for n in pm.instruments[0].notes:
+      n.pitch += 12
+  pm.write('out.mid')
+
+
+================================================================================
+6. ZASTOSOWANIA I OGRANICZENIA
+================================================================================
+
+ZASTOSOWANIA:
+  • ML: modele generacyjne, autoencoder'y
+  • Analiza: struktura harmoniczna, rytmika
+  • Audio: note onset detection, source separation
+  • Benchmarking algorytmów MIDI
+  • Edukacja
+
+OGRANICZENIA:
+  • Dominacja repertuaru europejskiego (XVIII-XX w.)
+  • Brak jazz, muzyki tradycyjnej, elektronicznej
+  • Tempo domyślne (120 BPM) może nie być oryginalne
+  • Możliwe niekonsystencje w transkrypcji MIDI
+
+================================================================================
+7. PODSUMOWANIE
+================================================================================
+
+300 standaryzowanych fragmentów MIDI z dataset MAESTRO. Systematyczne
+podejście do ekstrakcji i normalizacji zapewnia powtarzalność. Pełna
+kompatybilność z popularnymi narzędziami (Python, DAW). Łatwa konwersja
+do audio, notacji lub reprezentacji numerycznych.
+
+================================================================================
+ŹRÓDŁO
+================================================================================
+
+[1] MAESTRO Dataset
+    https://magenta.tensorflow.org/datasets/maestro
+
+================================================================================
